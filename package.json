@@ -1,0 +1,14 @@
+{
+    "name": "playwright-hw2",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {},
+    "keywords": [],
+    "author": "Serhii Husenko",
+    "license": "ISC",
+    "description": "Homework for the second module.",
+    "devDependencies": {
+        "@playwright/test": "^1.63.0",
+        "@types/node": "^26.5.0"
+    }
+}
