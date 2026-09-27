@@ -5,83 +5,103 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("Cart counter is 0 by default", async ({ page }) => {
-    await expect(page.getByRole("link", { name: "Cart page" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Cart page" })).toContainText(
-        "cart (0)",
-    );
+    const cartMenuLink = page.getByRole("link", { name: "Cart page" });
+
+    await expect(cartMenuLink).toBeVisible();
+    await expect(cartMenuLink).toContainText("cart (0)");
 });
 
 test("Empty cart page has default text placeholder", async ({ page }) => {
-    await page.getByRole("link", { name: "Cart page" }).click();
-    await expect(page.getByText("No coffee, go add some.")).toBeVisible();
+    const cartMenuLink = page.getByRole("link", { name: "Cart page" });
+    const cartPageEmptyStateMessage = page.getByText("No coffee, go add some.");
+
+    await cartMenuLink.click();
+    await expect(cartPageEmptyStateMessage).toBeVisible();
 });
 
 test("Adding a drink updates the cart counter", async ({ page }) => {
-    await page.getByLabel("Espresso", { exact: true }).click();
-    await expect(page.getByRole("link", { name: "Cart page" })).toContainText(
-        "cart (1)",
-    );
+    const espressoCup = page.getByLabel("Espresso", { exact: true });
+    const cartMenuLink = page.getByRole("link", { name: "Cart page" });
+
+    await espressoCup.click();
+    await expect(cartMenuLink).toContainText("cart (1)");
 });
 
 test("Total is calculated correctly for multiple drinks", async ({ page }) => {
-    await page.getByLabel("Espresso", { exact: true }).click();
-    await page.getByLabel("Espresso Macchiato", { exact: true }).click();
-    await expect(page.getByRole("link", { name: "Cart page" })).toContainText(
-        "cart (2)",
-    );
-    await expect(
-        page.getByLabel("Proceed to checkout", { exact: true }),
-    ).toContainText("Total: $22.00");
+    const espressoCup = page.getByLabel("Espresso", { exact: true });
+    const espressoMacchiatoCup = page.getByLabel("Espresso Macchiato", {
+        exact: true,
+    });
+    const cartMenuLink = page.getByRole("link", { name: "Cart page" });
+    const checkoutBT = page.getByLabel("Proceed to checkout", { exact: true });
+
+    await espressoCup.click();
+    await espressoMacchiatoCup.click();
+    await expect(cartMenuLink).toContainText("cart (2)");
+    await expect(checkoutBT).toContainText("Total: $22.00");
 });
 
 test("Added drinks are shown on the cart page", async ({ page }) => {
-    await page.getByLabel("Espresso", { exact: true }).click();
-    await page.getByLabel("Cappuccino", { exact: true }).click();
-    await page.getByRole("link", { name: "Cart page" }).click();
-    await expect(
-        page
-            .getByRole("listitem")
-            .filter({ has: page.getByText("Espresso", { exact: true }) }),
-    ).toBeVisible();
-    await expect(
-        page
-            .getByRole("listitem")
-            .filter({ has: page.getByText("Cappuccino", { exact: true }) }),
-    ).toBeVisible();
+    const espressoCup = page.getByLabel("Espresso", { exact: true });
+    const cappuccinoCup = page.getByLabel("Cappuccino", { exact: true });
+    const cartMenuLink = page.getByRole("link", { name: "Cart page" });
+    const cartPageListItem = page.getByRole("listitem");
+    const espressoCartItem = cartPageListItem.filter({
+        has: page.getByText("Espresso", { exact: true }),
+    });
+    const cappuccinoCartItem = cartPageListItem.filter({
+        has: page.getByText("Cappuccino", { exact: true }),
+    });
+
+    await espressoCup.click();
+    await cappuccinoCup.click();
+    await cartMenuLink.click();
+    await expect(espressoCartItem).toBeVisible();
+    await expect(cappuccinoCartItem).toBeVisible();
 });
 
 test("Promo proposal is visible", async ({ page }) => {
-    await page.getByLabel("Espresso", { exact: true }).click();
-    await page.getByLabel("Espresso Macchiato", { exact: true }).click();
-    await page.getByLabel("Cappuccino", { exact: true }).click();
-    await expect(
-        page.getByText(
-            "It's your lucky day! Get an extra cup of Mocha for $4.",
-        ),
-    ).toBeVisible();
+    const espressoCup = page.getByLabel("Espresso", { exact: true });
+    const espressoMacchiatoCup = page.getByLabel("Espresso", {
+        exact: true,
+    });
+    const cappuccinoCup = page.getByLabel("Cappuccino", { exact: true });
+    const promoTitle = page.getByText(
+        "It's your lucky day! Get an extra cup of Mocha for $4.",
+    );
+
+    await espressoCup.click();
+    await espressoMacchiatoCup.click();
+    await cappuccinoCup.click();
+    await expect(promoTitle).toBeVisible();
 });
 
 test("Payment fields are editable", async ({ page }) => {
-    await page.getByLabel("Proceed to checkout", { exact: true }).click();
-    await page.getByRole("textbox", { name: "Name" }).fill("Serhii");
-    await expect(page.getByRole("textbox", { name: "Name" })).toHaveValue(
-        "Serhii",
-    );
-    await page.getByRole("textbox", { name: "Email" }).fill("test@test.com");
-    await expect(page.getByRole("textbox", { name: "Email" })).toHaveValue(
-        "test@test.com",
-    );
+    const checkoutBT = page.getByLabel("Proceed to checkout", { exact: true });
+    const nameField = page.getByRole("textbox", { name: "Name" });
+    const emailField = page.getByRole("textbox", { name: "Email" });
+
+    await checkoutBT.click();
+    await nameField.fill("Serhii");
+    await expect(nameField).toHaveValue("Serhii");
+    await emailField.fill("test@test.com");
+    await expect(emailField).toHaveValue("test@test.com");
 });
 
 test("Successful payment message is shown", async ({ page }) => {
-    await page.getByLabel("Espresso", { exact: true }).click();
-    await page.getByLabel("Proceed to checkout", { exact: true }).click();
-    await page.getByRole("textbox", { name: "Name" }).fill("Serhii");
-    await page.getByRole("textbox", { name: "Email" }).fill("test@test.com");
-    await page.getByRole("button", { name: "Submit" }).click();
-    await expect(
-        page.getByText(
-            "Thanks for your purchase. Please check your email for payment.",
-        ),
-    ).toBeVisible();
+    const espressoCup = page.getByLabel("Espresso", { exact: true });
+    const checkoutBT = page.getByLabel("Proceed to checkout", { exact: true });
+    const nameField = page.getByRole("textbox", { name: "Name" });
+    const emailField = page.getByRole("textbox", { name: "Email" });
+    const submitBT = page.getByRole("button", { name: "Submit" });
+    const snackbarSuccessMessage = page.getByText(
+        "Thanks for your purchase. Please check your email for payment.",
+    );
+
+    await espressoCup.click();
+    await checkoutBT.click();
+    await nameField.fill("Serhii");
+    await emailField.fill("test@test.com");
+    await submitBT.click();
+    await expect(snackbarSuccessMessage).toBeVisible();
 });
