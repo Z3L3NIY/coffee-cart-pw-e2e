@@ -1,4 +1,9 @@
 import { test, expect } from "@playwright/test";
+import {
+    fillPaymentForm,
+    openPaymentForm,
+    submitPaymentForm,
+} from "../page-actions";
 
 test.beforeEach(async ({ page }) => {
     await page.goto("/");
@@ -77,31 +82,28 @@ test("Promo proposal is visible", async ({ page }) => {
 });
 
 test("Payment fields are editable", async ({ page }) => {
-    const checkoutBT = page.getByLabel("Proceed to checkout", { exact: true });
+    const name = "Serhii";
+    const email = "test@test.com";
     const nameField = page.getByRole("textbox", { name: "Name" });
     const emailField = page.getByRole("textbox", { name: "Email" });
 
-    await checkoutBT.click();
-    await nameField.fill("Serhii");
+    await openPaymentForm(page);
+    await fillPaymentForm(page, name, email);
     await expect(nameField).toHaveValue("Serhii");
-    await emailField.fill("test@test.com");
     await expect(emailField).toHaveValue("test@test.com");
 });
 
 test("Successful payment message is shown", async ({ page }) => {
+    const name = "Serhii";
+    const email = "test@test.com";
     const espressoCup = page.getByLabel("Espresso", { exact: true });
-    const checkoutBT = page.getByLabel("Proceed to checkout", { exact: true });
-    const nameField = page.getByRole("textbox", { name: "Name" });
-    const emailField = page.getByRole("textbox", { name: "Email" });
-    const submitBT = page.getByRole("button", { name: "Submit" });
     const snackbarSuccessMessage = page.getByText(
         "Thanks for your purchase. Please check your email for payment.",
     );
 
     await espressoCup.click();
-    await checkoutBT.click();
-    await nameField.fill("Serhii");
-    await emailField.fill("test@test.com");
-    await submitBT.click();
+    await openPaymentForm(page);
+    await fillPaymentForm(page, name, email);
+    await submitPaymentForm(page);
     await expect(snackbarSuccessMessage).toBeVisible();
 });
